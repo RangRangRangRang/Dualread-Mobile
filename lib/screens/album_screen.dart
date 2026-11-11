@@ -154,6 +154,11 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     });
   }
 
+  Future<void> removeBook(BookItem book) async {
+    await AlbumService.toggleBookInAlbum(widget.albumId, book.id, false);
+    await loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,6 +180,11 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     leading: Image.asset('assets/images/book.png', width: 36),
                     title: Text(book.title),
                     subtitle: Text(book.author),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      tooltip: 'Gỡ khỏi album',
+                      onPressed: () => removeBook(book),
+                    ),
                   ),
                 );
               },
