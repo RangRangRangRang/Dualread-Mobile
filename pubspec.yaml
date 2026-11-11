@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   epubx: ^4.0.0
   html: ^0.15.7
-  file_picker: ^13.3.2
+  file_picker: 8.1.2
   path_provider: ^2.1.6
   shared_preferences: ^2.5.5
   intl: ^0.20.3

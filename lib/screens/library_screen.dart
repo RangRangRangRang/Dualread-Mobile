@@ -1,5 +1,7 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../models/book_item.dart';
+import '../services/epub_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/book_tile.dart';
 
@@ -13,6 +15,7 @@ class LibraryScreen extends StatefulWidget {
 class _LibraryScreenState extends State<LibraryScreen> {
   List<BookItem> books = [];
   bool loading = true;
+  bool importing = false;
 
   @override
   void initState() {
@@ -28,6 +31,29 @@ class _LibraryScreenState extends State<LibraryScreen> {
     });
   }
 
+  void showMessage(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  Future<void> pickBook() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['epub'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    setState(() => importing = true);
+    try {
+      final book = await EpubService.importBook(result.files.single.path!);
+      await StorageService.addBook(book);
+      await loadData();
+      showMessage('Đã thêm sách: ${book.title}');
+    } catch (e) {
+      showMessage('Không đọc được file EPUB này');
+    }
+    setState(() => importing = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final shown = books;
@@ -36,10 +62,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         title: const Text('Thư viện'),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: importing ? null : pickBook,
+        icon: const Icon(Icons.add),
+        label: const Text('Thêm EPUB'),
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                if (importing) const LinearProgressIndicator(),
                 Expanded(
                   child: shown.isEmpty
                       ? const Center(child: Text('Chưa có sách nào'))
