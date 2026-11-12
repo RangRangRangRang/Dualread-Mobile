@@ -27,6 +27,11 @@ class _AlbumScreenState extends State<AlbumScreen> {
     setState(() => albums = data);
   }
 
+  void showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
   Future<String?> askName(String title, String oldName) async {
     final controller = TextEditingController(text: oldName);
     return showDialog<String>(
@@ -57,6 +62,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (name == null || name.isEmpty) return;
     await AlbumService.createAlbum(name);
     await loadData();
+    showMessage('Đã tạo album "$name"');
   }
 
   Future<void> renameAlbum(Album album) async {
@@ -64,6 +70,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (name == null || name.isEmpty) return;
     await AlbumService.renameAlbum(album.id, name);
     await loadData();
+    showMessage('Đã đổi tên album');
   }
 
   Future<void> deleteAlbum(Album album) async {
@@ -87,6 +94,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (ok == true) {
       await AlbumService.deleteAlbum(album.id);
       await loadData();
+      showMessage('Đã xóa album');
     }
   }
 
