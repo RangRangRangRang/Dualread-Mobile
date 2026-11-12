@@ -4,6 +4,8 @@ import '../models/book_item.dart';
 import '../services/epub_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/book_tile.dart';
+import 'album_screen.dart';
+import 'reader_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key});
@@ -86,6 +88,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
+  Future<void> openReader(BookItem book) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ReaderScreen(book: book)),
+    );
+    await loadData();
+  }
+
+  Future<void> openAlbums() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AlbumScreen()),
+    );
+    await loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     final shown = books;
@@ -93,6 +111,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thư viện'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.collections_bookmark),
+            tooltip: 'Album',
+            onPressed: openAlbums,
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: importing ? null : pickBook,
@@ -113,7 +138,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             final book = shown[i];
                             return BookTile(
                               book: book,
-                              onTap: () {},
+                              onTap: () => openReader(book),
                               onMenu: (value) => handleMenu(value, book),
                             );
                           },
