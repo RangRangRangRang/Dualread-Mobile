@@ -77,6 +77,39 @@ class _ReaderScreenState extends State<ReaderScreen> {
       appBar: AppBar(
         title: Text(chapter.title, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Mục lục',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: chapters.length,
+                  itemBuilder: (ctx, i) {
+                    return ListTile(
+                      title: Text(chapters[i].title,
+                          maxLines: 2, overflow: TextOverflow.ellipsis),
+                      selected: i == current,
+                      onTap: () {
+                        Navigator.pop(context);
+                        goToChapter(i);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: ListView.builder(
         controller: scrollController,
         padding: const EdgeInsets.all(16),
