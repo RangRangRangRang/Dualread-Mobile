@@ -16,6 +16,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   bool loading = true;
   bool error = false;
   int current = 0;
+  double fontSize = 18;
   final ScrollController scrollController = ScrollController();
 
   @override
@@ -76,6 +77,20 @@ class _ReaderScreenState extends State<ReaderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(chapter.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.text_decrease),
+            onPressed: () {
+              if (fontSize > 12) setState(() => fontSize -= 2);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.text_increase),
+            onPressed: () {
+              if (fontSize < 32) setState(() => fontSize += 2);
+            },
+          ),
+        ],
       ),
       drawer: Drawer(
         child: SafeArea(
@@ -119,7 +134,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
             padding: const EdgeInsets.only(bottom: 14),
             child: SelectableText(
               chapter.paragraphs[i],
-              style: const TextStyle(fontSize: 18, height: 1.6),
+              style: TextStyle(fontSize: fontSize, height: 1.6),
             ),
           );
         },
