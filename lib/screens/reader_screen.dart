@@ -16,11 +16,19 @@ class _ReaderScreenState extends State<ReaderScreen> {
   bool loading = true;
   bool error = false;
   int current = 0;
+  double fontSize = 18;
+  final ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     loadChapters();
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> loadChapters() async {
@@ -37,6 +45,14 @@ class _ReaderScreenState extends State<ReaderScreen> {
         loading = false;
         error = true;
       });
+    }
+  }
+
+  void goToChapter(int index) {
+    if (index < 0 || index >= chapters.length) return;
+    setState(() => current = index);
+    if (scrollController.hasClients) {
+      scrollController.jumpTo(0);
     }
   }
 
@@ -61,8 +77,56 @@ class _ReaderScreenState extends State<ReaderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(chapter.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.text_decrease),
+            onPressed: () {
+              if (fontSize > 12) setState(() => fontSize -= 2);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.text_increase),
+            onPressed: () {
+              if (fontSize < 32) setState(() => fontSize += 2);
+            },
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Mục lục',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: chapters.length,
+                  itemBuilder: (ctx, i) {
+                    return ListTile(
+                      title: Text(chapters[i].title,
+                          maxLines: 2, overflow: TextOverflow.ellipsis),
+                      selected: i == current,
+                      onTap: () {
+                        Navigator.pop(context);
+                        goToChapter(i);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: ListView.builder(
+        controller: scrollController,
         padding: const EdgeInsets.all(16),
         itemCount: chapter.paragraphs.length,
         itemBuilder: (ctx, i) {
@@ -70,10 +134,30 @@ class _ReaderScreenState extends State<ReaderScreen> {
             padding: const EdgeInsets.only(bottom: 14),
             child: SelectableText(
               chapter.paragraphs[i],
-              style: const TextStyle(fontSize: 18, height: 1.6),
+              style: TextStyle(fontSize: fontSize, height: 1.6),
             ),
           );
         },
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton.icon(
+              onPressed: current > 0 ? () => goToChapter(current - 1) : null,
+              icon: const Icon(Icons.chevron_left),
+              label: const Text('Trước'),
+            ),
+            Text('${current + 1} / ${chapters.length}'),
+            TextButton.icon(
+              onPressed: current < chapters.length - 1
+                  ? () => goToChapter(current + 1)
+                  : null,
+              icon: const Icon(Icons.chevron_right),
+              label: const Text('Sau'),
+            ),
+          ],
+        ),
       ),
     );
   }
