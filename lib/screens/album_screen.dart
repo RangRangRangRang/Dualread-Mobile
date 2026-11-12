@@ -4,6 +4,7 @@ import '../models/book_item.dart';
 import '../services/album_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/album_tile.dart';
+import 'reader_screen.dart';
 
 class AlbumScreen extends StatefulWidget {
   const AlbumScreen({super.key});
@@ -180,6 +181,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     leading: Image.asset('assets/images/book.png', width: 36),
                     title: Text(book.title),
                     subtitle: Text(book.author),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReaderScreen(book: book),
+                      ),
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
                       tooltip: 'Gỡ khỏi album',
