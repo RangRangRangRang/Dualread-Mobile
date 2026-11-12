@@ -1,4 +1,6 @@
+import 'dart:io';
 import '../models/book_item.dart';
+import 'album_service.dart';
 import 'json_storage.dart';
 
 class StorageService {
@@ -26,5 +28,17 @@ class StorageService {
       }
     }
     await saveBooks(books);
+  }
+
+  static Future<void> deleteBook(BookItem book) async {
+    final books = await loadBooks();
+    books.removeWhere((b) => b.id == book.id);
+    await saveBooks(books);
+    await AlbumService.removeBookFromAllAlbums(book.id);
+
+    final file = File(book.path);
+    if (await file.exists()) {
+      await file.delete();
+    }
   }
 }

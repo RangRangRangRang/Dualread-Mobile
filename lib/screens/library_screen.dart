@@ -54,6 +54,38 @@ class _LibraryScreenState extends State<LibraryScreen> {
     setState(() => importing = false);
   }
 
+  Future<void> confirmDelete(BookItem book) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xóa sách'),
+        content: Text('Bạn có chắc muốn xóa "${book.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await StorageService.deleteBook(book);
+      await loadData();
+    }
+  }
+
+  void handleMenu(String value, BookItem book) {
+    switch (value) {
+      case 'delete':
+        confirmDelete(book);
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final shown = books;
@@ -82,7 +114,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             return BookTile(
                               book: book,
                               onTap: () {},
-                              onMenu: (value) {},
+                              onMenu: (value) => handleMenu(value, book),
                             );
                           },
                         ),
