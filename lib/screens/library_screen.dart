@@ -1,6 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../models/album.dart';
 import '../models/book_item.dart';
+import '../services/album_service.dart';
 import '../services/epub_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/book_tile.dart';
@@ -18,6 +20,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   List<BookItem> books = [];
   bool loading = true;
   bool importing = false;
+  String keyword = '';
 
   @override
   void initState() {
@@ -80,8 +83,120 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
+  Future<void> pickDate(BookItem book) async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: book.targetDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+    if (date == null) return;
+    await StorageService.saveTargetDate(book.id, date);
+    await loadData();
+  }
+
+  Future<void> chooseAlbums(BookItem book) async {
+    final albums = await AlbumService.loadAlbums();
+    if (!mounted) return;
+
+    if (albums.isEmpty) {
+      showMessage('Chưa có album nào. Hãy tạo album trước.');
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              title: const Text('Thêm vào album'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView(
+                  shrinkWrap: true,
+                  children: albums.map((Album a) {
+                    return CheckboxListTile(
+                      title: Text(a.name),
+                      value: a.bookIds.contains(book.id),
+                      onChanged: (value) async {
+                        await AlbumService.toggleBookInAlbum(
+                            a.id, book.id, value == true);
+                        setDialogState(() {
+                          if (value == true) {
+                            a.bookIds.add(book.id);
+                          } else {
+                            a.bookIds.remove(book.id);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Xong'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> showStats() async {
+    final albums = await AlbumService.loadAlbums();
+    if (!mounted) return;
+
+    final Map<String, int> byAuthor = {};
+    for (final b in books) {
+      byAuthor[b.author] = (byAuthor[b.author] ?? 0) + 1;
+    }
+    final reading = books.where((b) => b.lastChapter > 0).length;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Thống kê'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Tổng số sách: ${books.length}'),
+              Text('Đang đọc: $reading'),
+              Text('Chưa đọc: ${books.length - reading}'),
+              Text('Số album: ${albums.length}'),
+              const SizedBox(height: 12),
+              const Text(
+                'Số sách theo tác giả',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              ...byAuthor.entries.map((e) => Text('${e.key}: ${e.value}')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void handleMenu(String value, BookItem book) {
     switch (value) {
+      case 'album':
+        chooseAlbums(book);
+        break;
+      case 'date':
+        pickDate(book);
+        break;
       case 'delete':
         confirmDelete(book);
         break;
@@ -106,12 +221,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final shown = books;
+    final shown = books
+        .where((b) =>
+            b.title.toLowerCase().contains(keyword.toLowerCase()) ||
+            b.author.toLowerCase().contains(keyword.toLowerCase()))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Thư viện'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            tooltip: 'Thống kê',
+            onPressed: showStats,
+          ),
           IconButton(
             icon: const Icon(Icons.collections_bookmark),
             tooltip: 'Album',
@@ -129,6 +253,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
           : Column(
               children: [
                 if (importing) const LinearProgressIndicator(),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      hintText: 'Tìm theo tên sách hoặc tác giả',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) => setState(() => keyword = value),
+                  ),
+                ),
                 Expanded(
                   child: shown.isEmpty
                       ? const Center(child: Text('Chưa có sách nào'))
