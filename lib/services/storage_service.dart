@@ -41,4 +41,14 @@ class StorageService {
       await file.delete();
     }
   }
+
+  static Future<void> saveTargetDate(String bookId, DateTime date) async {
+    final books = await loadBooks();
+    for (final b in books) {
+      if (b.id == bookId) {
+        b.targetDate = date;
+      }
+    }
+    await saveBooks(books);
+  }
 }
