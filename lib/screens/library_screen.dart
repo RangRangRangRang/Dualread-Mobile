@@ -147,6 +147,48 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  Future<void> showStats() async {
+    final albums = await AlbumService.loadAlbums();
+    if (!mounted) return;
+
+    final Map<String, int> byAuthor = {};
+    for (final b in books) {
+      byAuthor[b.author] = (byAuthor[b.author] ?? 0) + 1;
+    }
+    final reading = books.where((b) => b.lastChapter > 0).length;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Thống kê'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Tổng số sách: ${books.length}'),
+              Text('Đang đọc: $reading'),
+              Text('Chưa đọc: ${books.length - reading}'),
+              Text('Số album: ${albums.length}'),
+              const SizedBox(height: 12),
+              const Text(
+                'Số sách theo tác giả',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              ...byAuthor.entries.map((e) => Text('${e.key}: ${e.value}')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void handleMenu(String value, BookItem book) {
     switch (value) {
       case 'album':
@@ -189,6 +231,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         title: const Text('Thư viện'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            tooltip: 'Thống kê',
+            onPressed: showStats,
+          ),
           IconButton(
             icon: const Icon(Icons.collections_bookmark),
             tooltip: 'Album',
