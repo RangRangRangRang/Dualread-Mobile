@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/book_item.dart';
 import '../services/epub_service.dart';
 import '../services/storage_service.dart';
+import '../utils/sound_helper.dart';
 
 class ReaderScreen extends StatefulWidget {
   final BookItem book;
@@ -57,6 +58,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     setState(() => current = index);
     widget.book.lastChapter = index;
     StorageService.saveLastChapter(widget.book.id, index);
+    SoundHelper.playPage();
     if (scrollController.hasClients) {
       scrollController.jumpTo(0);
     }
