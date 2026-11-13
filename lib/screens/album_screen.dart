@@ -4,6 +4,7 @@ import '../models/book_item.dart';
 import '../services/album_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/album_tile.dart';
+import 'reader_screen.dart';
 
 class AlbumScreen extends StatefulWidget {
   const AlbumScreen({super.key});
@@ -24,6 +25,11 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Future<void> loadData() async {
     final data = await AlbumService.loadAlbums();
     setState(() => albums = data);
+  }
+
+  void showMessage(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   Future<String?> askName(String title, String oldName) async {
@@ -56,6 +62,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (name == null || name.isEmpty) return;
     await AlbumService.createAlbum(name);
     await loadData();
+    showMessage('Đã tạo album "$name"');
   }
 
   Future<void> renameAlbum(Album album) async {
@@ -63,6 +70,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (name == null || name.isEmpty) return;
     await AlbumService.renameAlbum(album.id, name);
     await loadData();
+    showMessage('Đã đổi tên album');
   }
 
   Future<void> deleteAlbum(Album album) async {
@@ -86,6 +94,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (ok == true) {
       await AlbumService.deleteAlbum(album.id);
       await loadData();
+      showMessage('Đã xóa album');
     }
   }
 
@@ -180,6 +189,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     leading: Image.asset('assets/images/book.png', width: 36),
                     title: Text(book.title),
                     subtitle: Text(book.author),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReaderScreen(book: book),
+                      ),
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
                       tooltip: 'Gỡ khỏi album',
