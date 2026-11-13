@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/book_item.dart';
 import '../services/epub_service.dart';
+import '../services/storage_service.dart';
 
 class ReaderScreen extends StatefulWidget {
   final BookItem book;
@@ -37,7 +38,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
       final data = await EpubService.loadChapters(widget.book.path);
       setState(() {
         chapters = data;
-        current = 0;
+        current = widget.book.lastChapter < data.length
+            ? widget.book.lastChapter
+            : 0;
         loading = false;
         error = data.isEmpty;
       });
@@ -52,6 +55,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   void goToChapter(int index) {
     if (index < 0 || index >= chapters.length) return;
     setState(() => current = index);
+    widget.book.lastChapter = index;
+    StorageService.saveLastChapter(widget.book.id, index);
     if (scrollController.hasClients) {
       scrollController.jumpTo(0);
     }
