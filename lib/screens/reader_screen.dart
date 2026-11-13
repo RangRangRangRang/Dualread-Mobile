@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/book_item.dart';
 import '../services/epub_service.dart';
+import '../services/storage_service.dart';
 
 class ReaderScreen extends StatefulWidget {
   final BookItem book;
@@ -17,6 +18,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
   bool error = false;
   int current = 0;
   double fontSize = 18;
+  bool darkMode = false;
   final ScrollController scrollController = ScrollController();
 
   @override
@@ -36,7 +38,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
       final data = await EpubService.loadChapters(widget.book.path);
       setState(() {
         chapters = data;
-        current = 0;
+        current = widget.book.lastChapter < data.length
+            ? widget.book.lastChapter
+            : 0;
         loading = false;
         error = data.isEmpty;
       });
@@ -51,6 +55,8 @@ class _ReaderScreenState extends State<ReaderScreen> {
   void goToChapter(int index) {
     if (index < 0 || index >= chapters.length) return;
     setState(() => current = index);
+    widget.book.lastChapter = index;
+    StorageService.saveLastChapter(widget.book.id, index);
     if (scrollController.hasClients) {
       scrollController.jumpTo(0);
     }
@@ -58,6 +64,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = darkMode ? const Color(0xFF121212) : const Color(0xFFFFFBF2);
+    final textColor = darkMode ? Colors.white70 : Colors.black87;
+
     if (loading) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.book.title)),
@@ -75,6 +84,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final chapter = chapters[current];
 
     return Scaffold(
+      backgroundColor: bgColor,
       appBar: AppBar(
         title: Text(chapter.title, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
@@ -89,6 +99,10 @@ class _ReaderScreenState extends State<ReaderScreen> {
             onPressed: () {
               if (fontSize < 32) setState(() => fontSize += 2);
             },
+          ),
+          IconButton(
+            icon: Icon(darkMode ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => setState(() => darkMode = !darkMode),
           ),
         ],
       ),
@@ -134,7 +148,7 @@ class _ReaderScreenState extends State<ReaderScreen> {
             padding: const EdgeInsets.only(bottom: 14),
             child: SelectableText(
               chapter.paragraphs[i],
-              style: TextStyle(fontSize: fontSize, height: 1.6),
+              style: TextStyle(fontSize: fontSize, height: 1.6, color: textColor),
             ),
           );
         },
