@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/library_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const DualReadApp());
@@ -18,7 +18,7 @@ class DualReadApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Tinos',
       ),
-      home: const LibraryScreen(),
+      home: const HomeScreen(),
     );
   }
 }

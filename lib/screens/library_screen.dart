@@ -6,7 +6,6 @@ import '../services/album_service.dart';
 import '../services/epub_service.dart';
 import '../services/storage_service.dart';
 import '../widgets/book_tile.dart';
-import 'album_screen.dart';
 import 'reader_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -211,14 +210,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await loadData();
   }
 
-  Future<void> openAlbums() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AlbumScreen()),
-    );
-    await loadData();
-  }
-
   @override
   Widget build(BuildContext context) {
     final shown = books
@@ -235,11 +226,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
             icon: const Icon(Icons.bar_chart),
             tooltip: 'Thống kê',
             onPressed: showStats,
-          ),
-          IconButton(
-            icon: const Icon(Icons.collections_bookmark),
-            tooltip: 'Album',
-            onPressed: openAlbums,
           ),
         ],
       ),
