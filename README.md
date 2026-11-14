@@ -8,7 +8,7 @@ Bài tập lớn môn **Lập trình thiết bị di động**, Trường Đại
 
 - Lớp: N02
 - Nhóm: 3
-- Repository: `2026_2027_1_1_LTTBDD_N02_Nhom_3.2`
+- Repository: `2026_2027_1_1_LTTBDD_N02_Nhom_3`
 
 | STT | MSSV | Họ và tên | Vai trò | Phần việc chính |
 |---|---|---|---|---|
@@ -18,9 +18,9 @@ Bài tập lớn môn **Lập trình thiết bị di động**, Trường Đại
 
 ## Cài đặt nhanh (Android)
 
-Tải file APK: [EpubReader.apk](https://github.com/RangRangRangRang/2026_2027_1_1_LTTBDD_N02_Nhom_3.2/releases/download/v1.0/EpubReader.apk)
+Tải file APK: [EpubReader.apk](https://github.com/RangRangRangRang/2026_2027_1_1_LTTBDD_N02_Nhom_3/releases/download/v1.0/EpubReader.apk)
 
-Hoặc vào trang [Releases](https://github.com/RangRangRangRang/2026_2027_1_1_LTTBDD_N02_Nhom_3.2/releases/latest) và tải file `EpubReader.apk` trong mục Assets.
+Hoặc vào trang [Releases](https://github.com/RangRangRangRang/2026_2027_1_1_LTTBDD_N02_Nhom_3/releases/latest) và tải file `EpubReader.apk` trong mục Assets.
 
 1. Tải file về điện thoại hoặc máy ảo Android.
 2. Mở file, nếu máy hỏi thì cho phép cài ứng dụng từ nguồn này.
