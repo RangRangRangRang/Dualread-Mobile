@@ -11,7 +11,7 @@ Bài tập lớn môn **Lập trình thiết bị di động**, Trường Đại
 - Repository: `2026_2027_1_1_LTTBDD_N02_Nhom_3`
 
 | STT | MSSV | Họ và tên | Vai trò |
-|---|---|---|---|---|
+|---|---|---|---|
 | 1 | 23010721 | Lê Trường Giang | Nhóm trưởng |
 | 2 | 23010446 | Nguyễn Quang Huy | Thành viên |
 | 3 | 23010412 | Nguyễn Minh Tùng | Thành viên |
