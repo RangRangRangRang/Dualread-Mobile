@@ -266,7 +266,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 Expanded(
                   child: shown.isEmpty
-                      ? const Center(child: Text('Chưa có sách nào'))
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset('assets/images/book.png', width: 90),
+                              const SizedBox(height: 12),
+                              const Text('Chưa có sách nào'),
+                            ],
+                          ),
+                        )
                       : ListView.builder(
                           itemCount: shown.length,
                           itemBuilder: (ctx, i) {
