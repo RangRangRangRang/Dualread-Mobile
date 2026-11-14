@@ -1,34 +1,60 @@
 import 'package:flutter/material.dart';
+import '../utils/app_strings.dart';
 import '../widgets/group_title.dart';
+import '../widgets/language_switch.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final members = [
-      ['23010721', 'Lê Trường Giang'],
-      ['23010446', 'Nguyễn Quang Huy'],
-      ['23010412', 'Nguyễn Minh Tùng'],
-    ];
+  State<AboutScreen> createState() => _AboutScreenState();
+}
 
+class _AboutScreenState extends State<AboutScreen> {
+  final List<List<String>> members = [
+    ['23010721', 'Lê Trường Giang'],
+    ['23010446', 'Nguyễn Quang Huy'],
+    ['23010412', 'Nguyễn Minh Tùng'],
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    AppStrings.language.addListener(refresh);
+  }
+
+  void refresh() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.language.removeListener(refresh);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thông tin nhóm')),
+      appBar: AppBar(
+        title: Text(AppStrings.get('aboutTitle')),
+        actions: const [LanguageSwitch()],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const GroupTitle(
-            title: 'Nhóm 2',
-            subtitle: 'DualRead Mobile - Lập trình thiết bị di động',
+          GroupTitle(
+            title: AppStrings.get('groupName'),
+            subtitle: AppStrings.get('appSubtitle'),
           ),
           const SizedBox(height: 16),
           Card(
             child: SizedBox(
               width: double.infinity,
               child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('MSSV')),
-                  DataColumn(label: Text('Họ và tên')),
+                columns: [
+                  DataColumn(label: Text(AppStrings.get('colStudentId'))),
+                  DataColumn(label: Text(AppStrings.get('colName'))),
                 ],
                 rows: members
                     .map((m) => DataRow(

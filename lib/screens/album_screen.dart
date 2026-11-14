@@ -3,7 +3,10 @@ import '../models/album.dart';
 import '../models/book_item.dart';
 import '../services/album_service.dart';
 import '../services/storage_service.dart';
+import '../utils/app_strings.dart';
+import '../widgets/add_books_dialog.dart';
 import '../widgets/album_tile.dart';
+import '../widgets/language_switch.dart';
 import 'reader_screen.dart';
 
 class AlbumScreen extends StatefulWidget {
@@ -19,7 +22,18 @@ class _AlbumScreenState extends State<AlbumScreen> {
   @override
   void initState() {
     super.initState();
+    AppStrings.language.addListener(refresh);
     loadData();
+  }
+
+  void refresh() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.language.removeListener(refresh);
+    super.dispose();
   }
 
   Future<void> loadData() async {
@@ -41,16 +55,16 @@ class _AlbumScreenState extends State<AlbumScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'Tên album'),
+          decoration: InputDecoration(hintText: AppStrings.get('albumNameHint')),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
+            child: Text(AppStrings.get('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Lưu'),
+            child: Text(AppStrings.get('save')),
           ),
         ],
       ),
@@ -58,35 +72,35 @@ class _AlbumScreenState extends State<AlbumScreen> {
   }
 
   Future<void> createAlbum() async {
-    final name = await askName('Tạo album mới', '');
+    final name = await askName(AppStrings.get('createAlbumTitle'), '');
     if (name == null || name.isEmpty) return;
     await AlbumService.createAlbum(name);
     await loadData();
-    showMessage('Đã tạo album "$name"');
+    showMessage(AppStrings.format('albumCreated', [name]));
   }
 
   Future<void> renameAlbum(Album album) async {
-    final name = await askName('Đổi tên album', album.name);
+    final name = await askName(AppStrings.get('renameAlbumTitle'), album.name);
     if (name == null || name.isEmpty) return;
     await AlbumService.renameAlbum(album.id, name);
     await loadData();
-    showMessage('Đã đổi tên album');
+    showMessage(AppStrings.get('albumRenamed'));
   }
 
   Future<void> deleteAlbum(Album album) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xóa album'),
-        content: Text('Xóa album "${album.name}"? Sách vẫn được giữ lại.'),
+        title: Text(AppStrings.get('deleteAlbumTitle')),
+        content: Text(AppStrings.format('deleteAlbumAsk', [album.name])),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(AppStrings.get('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa'),
+            child: Text(AppStrings.get('delete')),
           ),
         ],
       ),
@@ -94,8 +108,13 @@ class _AlbumScreenState extends State<AlbumScreen> {
     if (ok == true) {
       await AlbumService.deleteAlbum(album.id);
       await loadData();
-      showMessage('Đã xóa album');
+      showMessage(AppStrings.get('albumDeleted'));
     }
+  }
+
+  Future<void> addBooks(Album album) async {
+    await showAddBooksDialog(context, album.id);
+    await loadData();
   }
 
   Future<void> openAlbum(Album album) async {
@@ -109,13 +128,16 @@ class _AlbumScreenState extends State<AlbumScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Album')),
+      appBar: AppBar(
+        title: Text(AppStrings.get('albumTitle')),
+        actions: const [LanguageSwitch()],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: createAlbum,
         child: const Icon(Icons.add),
       ),
       body: albums.isEmpty
-          ? const Center(child: Text('Chưa có album nào'))
+          ? Center(child: Text(AppStrings.get('noAlbums')))
           : ListView.builder(
               itemCount: albums.length,
               itemBuilder: (ctx, i) {
@@ -124,6 +146,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   album: album,
                   onTap: () => openAlbum(album),
                   onMenu: (value) {
+                    if (value == 'add') addBooks(album);
                     if (value == 'rename') renameAlbum(album);
                     if (value == 'delete') deleteAlbum(album);
                   },
@@ -150,7 +173,18 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   @override
   void initState() {
     super.initState();
+    AppStrings.language.addListener(refresh);
     loadData();
+  }
+
+  void refresh() {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    AppStrings.language.removeListener(refresh);
+    super.dispose();
   }
 
   Future<void> loadData() async {
@@ -168,23 +202,29 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     await loadData();
   }
 
+  Future<void> addBooks() async {
+    await showAddBooksDialog(context, widget.albumId);
+    await loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(albumName)),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: addBooks,
+        icon: const Icon(Icons.add),
+        label: Text(AppStrings.get('addBooks')),
+      ),
       body: books.isEmpty
-          ? const Center(
-              child: Text('Album trống. Thêm sách từ màn hình Thư viện.'),
-            )
+          ? Center(child: Text(AppStrings.get('albumEmpty')))
           : ListView.builder(
               itemCount: books.length,
               itemBuilder: (ctx, i) {
                 final book = books[i];
                 return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   child: ListTile(
                     leading: Image.asset('assets/images/book.png', width: 36),
                     title: Text(book.title),
@@ -192,12 +232,11 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ReaderScreen(book: book),
-                      ),
+                          builder: (_) => ReaderScreen(book: book)),
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.remove_circle_outline),
-                      tooltip: 'Gỡ khỏi album',
+                      tooltip: AppStrings.get('removeFromAlbum'),
                       onPressed: () => removeBook(book),
                     ),
                   ),

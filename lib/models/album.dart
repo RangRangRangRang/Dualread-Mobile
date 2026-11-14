@@ -1,3 +1,4 @@
+import '../utils/app_strings.dart';
 import 'item.dart';
 
 class Album extends Item {
@@ -15,7 +16,7 @@ class Album extends Item {
 
   @override
   String describe() {
-    return '${bookIds.length} sách';
+    return AppStrings.format('albumBooks', ['${bookIds.length}']);
   }
 
   @override

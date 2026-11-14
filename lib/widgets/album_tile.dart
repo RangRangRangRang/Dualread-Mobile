@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/album.dart';
+import '../utils/app_strings.dart';
 import '../utils/date_helper.dart';
 
 class AlbumTile extends StatelessWidget {
@@ -25,14 +26,24 @@ class AlbumTile extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          '${album.describe()} • tạo ${formatDate(album.createdAt)}',
+          '${album.describe()} • ${AppStrings.format('createdOn', [formatDate(album.createdAt)])}',
         ),
         onTap: onTap,
         trailing: PopupMenuButton<String>(
           onSelected: onMenu,
-          itemBuilder: (ctx) => const [
-            PopupMenuItem(value: 'rename', child: Text('Đổi tên')),
-            PopupMenuItem(value: 'delete', child: Text('Xóa')),
+          itemBuilder: (ctx) => [
+            PopupMenuItem(
+              value: 'add',
+              child: Text(AppStrings.get('addBooks')),
+            ),
+            PopupMenuItem(
+              value: 'rename',
+              child: Text(AppStrings.get('rename')),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: Text(AppStrings.get('delete')),
+            ),
           ],
         ),
       ),

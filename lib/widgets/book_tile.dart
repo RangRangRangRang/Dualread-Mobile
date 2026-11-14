@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/book_item.dart';
+import '../utils/app_strings.dart';
 import '../utils/date_helper.dart';
 
 class BookTile extends StatelessWidget {
@@ -57,16 +58,25 @@ class BookTile extends StatelessWidget {
                       style: const TextStyle(color: Colors.indigo),
                     ),
                     if (date != null)
-                      Text('Dự định đọc xong: ${formatDate(date)}'),
+                      Text(AppStrings.format('targetDate', [formatDate(date)])),
                   ],
                 ),
               ),
               PopupMenuButton<String>(
                 onSelected: onMenu,
-                itemBuilder: (ctx) => const [
-                  PopupMenuItem(value: 'album', child: Text('Thêm vào album')),
-                  PopupMenuItem(value: 'date', child: Text('Chọn ngày đọc xong')),
-                  PopupMenuItem(value: 'delete', child: Text('Xóa')),
+                itemBuilder: (ctx) => [
+                  PopupMenuItem(
+                    value: 'album',
+                    child: Text(AppStrings.get('addToAlbum')),
+                  ),
+                  PopupMenuItem(
+                    value: 'date',
+                    child: Text(AppStrings.get('pickDate')),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text(AppStrings.get('delete')),
+                  ),
                 ],
               ),
             ],

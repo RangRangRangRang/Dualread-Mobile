@@ -1,3 +1,4 @@
+import '../utils/app_strings.dart';
 import 'item.dart';
 
 class BookItem extends Item {
@@ -19,7 +20,8 @@ class BookItem extends Item {
 
   @override
   String describe() {
-    return lastChapter == 0 ? 'Chưa đọc' : 'Đang đọc (chương ${lastChapter + 1})';
+    if (lastChapter == 0) return AppStrings.get('statusUnread');
+    return AppStrings.format('statusReading', ['${lastChapter + 1}']);
   }
 
   @override

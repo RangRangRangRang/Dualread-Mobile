@@ -5,7 +5,9 @@ import '../models/book_item.dart';
 import '../services/album_service.dart';
 import '../services/epub_service.dart';
 import '../services/storage_service.dart';
+import '../utils/app_strings.dart';
 import '../widgets/book_tile.dart';
+import '../widgets/language_switch.dart';
 import 'reader_screen.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -24,7 +26,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
   @override
   void initState() {
     super.initState();
+    AppStrings.language.addListener(refresh);
     loadData();
+  }
+
+  @override
+  void dispose() {
+    AppStrings.language.removeListener(refresh);
+    super.dispose();
+  }
+
+  void refresh() {
+    setState(() {});
   }
 
   Future<void> loadData() async {
@@ -51,9 +64,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       final book = await EpubService.importBook(result.files.single.path!);
       await StorageService.addBook(book);
       await loadData();
-      showMessage('Đã thêm sách: ${book.title}');
+      showMessage(AppStrings.format('bookAdded', [book.title]));
     } catch (e) {
-      showMessage('Không đọc được file EPUB này');
+      showMessage(AppStrings.get('epubError'));
     }
     setState(() => importing = false);
   }
@@ -62,16 +75,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Xóa sách'),
-        content: Text('Bạn có chắc muốn xóa "${book.title}"?'),
+        title: Text(AppStrings.get('deleteBook')),
+        content: Text(AppStrings.format('deleteBookAsk', [book.title])),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy'),
+            child: Text(AppStrings.get('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa'),
+            child: Text(AppStrings.get('delete')),
           ),
         ],
       ),
@@ -88,6 +101,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
       initialDate: book.targetDate ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
+      helpText: AppStrings.get('pickDate'),
+      cancelText: AppStrings.get('cancel'),
+      confirmText: AppStrings.get('ok'),
     );
     if (date == null) return;
     await StorageService.saveTargetDate(book.id, date);
@@ -99,7 +115,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     if (!mounted) return;
 
     if (albums.isEmpty) {
-      showMessage('Chưa có album nào. Hãy tạo album trước.');
+      showMessage(AppStrings.get('noAlbumYet'));
       return;
     }
 
@@ -109,7 +125,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              title: const Text('Thêm vào album'),
+              title: Text(AppStrings.get('addToAlbum')),
               content: SizedBox(
                 width: double.maxFinite,
                 child: ListView(
@@ -136,7 +152,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Xong'),
+                  child: Text(AppStrings.get('done')),
                 ),
               ],
             );
@@ -159,20 +175,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Thống kê'),
+        title: Text(AppStrings.get('statistics')),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Tổng số sách: ${books.length}'),
-              Text('Đang đọc: $reading'),
-              Text('Chưa đọc: ${books.length - reading}'),
-              Text('Số album: ${albums.length}'),
+              Text(AppStrings.format('totalBooks', ['${books.length}'])),
+              Text(AppStrings.format('readingCount', ['$reading'])),
+              Text(AppStrings.format('unreadCount', ['${books.length - reading}'])),
+              Text(AppStrings.format('albumCount', ['${albums.length}'])),
               const SizedBox(height: 12),
-              const Text(
-                'Số sách theo tác giả',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                AppStrings.get('booksByAuthor'),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               ...byAuthor.entries.map((e) => Text('${e.key}: ${e.value}')),
             ],
@@ -181,7 +197,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Đóng'),
+            child: Text(AppStrings.get('close')),
           ),
         ],
       ),
@@ -220,19 +236,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Thư viện'),
+        title: Text(AppStrings.get('library')),
         actions: [
           IconButton(
             icon: const Icon(Icons.bar_chart),
-            tooltip: 'Thống kê',
+            tooltip: AppStrings.get('statistics'),
             onPressed: showStats,
           ),
+          const LanguageSwitch(),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: importing ? null : pickBook,
         icon: const Icon(Icons.add),
-        label: const Text('Thêm EPUB'),
+        label: Text(AppStrings.get('addEpub')),
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -242,10 +259,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 Padding(
                   padding: const EdgeInsets.all(12),
                   child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Tìm theo tên sách hoặc tác giả',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: AppStrings.get('searchHint'),
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (value) => setState(() => keyword = value),
                   ),
@@ -258,7 +275,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             children: [
                               Image.asset('assets/images/book.png', width: 90),
                               const SizedBox(height: 12),
-                              const Text('Chưa có sách nào'),
+                              Text(AppStrings.get('noBooks')),
                             ],
                           ),
                         )
